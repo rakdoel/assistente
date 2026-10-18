@@ -782,7 +782,7 @@ button { -webkit-tap-highlight-color: transparent; }
       '<div class="bstat st-' + (evenings >= 5 ? "red" : evenings >= 3 ? "yellow" : "green") + '"><b>' + evenings + "</b><span>" + (evenings === 1 ? "sera di lavoro dopo le 18" : "sere di lavoro dopo le 18") + "</span></div>" +
       '<div class="bstat st-' + (weekends >= 3 ? "red" : weekends ? "yellow" : "green") + '"><b>' + weekends + "</b><span>" + (weekends === 1 ? "giorno di weekend con lavoro" : "giorni di weekend con lavoro") + "</span></div></div>" +
       '<p class="bnote">' + (freeDays.length ? "Liberi: " + freeDays.map(stamp).join(", ") + "." : "Nessun giorno libero in vista.") + " L'assistente può ricalibrare il carico per te.</p>" +
-      (S.sampleState === "ok" ? '<div class="actions"><button type="button" class="btn primary" data-act="coach-run" data-mode="punto">Chiedi all'assistente di ricalibrare</button></div>' : "") + "</section>");
+      (S.sampleState === "ok" ? '<div class="actions"><button type="button" class="btn primary" data-act="coach-run" data-mode="punto">Chiedi all’assistente di ricalibrare</button></div>' : "") + "</section>");
     return html.join("");
   }
 
@@ -984,7 +984,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var html = [], d = S.coachDoc, t = todayStr();
     html.push('<header class="top"><div class="brand">Assistente</div><h1 class="big">Ti do una mano</h1><p class="summary">Guarda il calendario e i lavori, ti propone cosa spostare, ti trova tempo per camminare e ti sprona sulle rogne. Le proposte le applichi tu.</p></header>');
     if (S.sampleState === "none") {
-      html.push('<section class="panel"><p class="empty">L'assistente funziona aprendo il quaderno da claude.ai o dall\'app di Claude, e usa il tuo account Claude. Da qui non è disponibile.</p></section>');
+      html.push('<section class="panel"><p class="empty">L’assistente funziona aprendo il quaderno da claude.ai o dall\'app di Claude, e usa il tuo account Claude. Da qui non è disponibile.</p></section>');
     } else {
       var busy = !!S.coachBusy;
       html.push('<div class="modes">' +
@@ -1016,7 +1016,7 @@ button { -webkit-tap-highlight-color: transparent; }
         if (m.role === "assistant" && m.actions && m.actions.length) ch.push(actsHtml(m.actions, m.applied || [], "chat:" + i));
       });
       if (S.chatBusy) ch.push('<div class="bub ai thinking">Sto pensando…</div>');
-      ch.push('</div><form class="chatform" id="chatform"><input id="chat-in" type="text" autocomplete="off" placeholder="Scrivi all'assistente" value="' + esc(S.chatDraft) + '"' + (S.chatBusy ? " disabled" : "") + '><button type="submit" class="btn primary"' + (S.chatBusy ? " disabled" : "") + ">Invia</button></form></section>");
+      ch.push('</div><form class="chatform" id="chatform"><input id="chat-in" type="text" autocomplete="off" placeholder="Scrivi all’assistente" value="' + esc(S.chatDraft) + '"' + (S.chatBusy ? " disabled" : "") + '><button type="submit" class="btn primary"' + (S.chatBusy ? " disabled" : "") + ">Invia</button></form></section>");
       html.push(ch.join(""));
     }
     var rogne = S.tasks.filter(function (x) { return x.rogna && !x.done; });
