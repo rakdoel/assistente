@@ -701,16 +701,17 @@ button { -webkit-tap-highlight-color: transparent; }
       });
     });
   }
-  var SEED_VER = 2, seedDone = null;
+  var SEED_VER = 3, seedDone = null;
   var SEED_TASKS = [
     [1, "s_greta1", "Capire a che punto è Greta con i risultati", "2026-10-19", "lab", 20, "Sentire Greta Cecchetelli: cosa ha già, cosa manca per la tesi."],
     [1, "s_greta2", "Mettere i risultati di Greta sul Drive", "2026-10-21", "lab", 30, "Cartella condivisa con lei."],
     [1, "s_greta3", "Dire a Greta di iniziare a scrivere la tesi", "2026-10-23", "lab", 15, "Prima l’indice, poi i metodi."],
-    [2, "s_conc1", "Concorso tecnologo: controllare su inPA data di pubblicazione e scadenza", "2026-10-19", "pratiche", 20, "Bando 15/TECNOLOGI/T-IND-2026, codice 09. Si può presentare domanda entro 20 giorni dalla pubblicazione su inPA, fino alle 23:59. Se è stato pubblicato il 16 ottobre, scade il 5 novembre."],
+    [3, "s_conc1", "Concorso tecnologo: rileggere i requisiti e decidere", "2026-10-19", "pratiche", 20, "Bando 15/TECNOLOGI/T-IND-2026, codice 09. Pubblicato il 16 ottobre su inPA, la domanda scade il 4 novembre alle 23:59."],
     [2, "s_conc2", "Concorso: preparare CV firmato, titoli e pubblicazioni con pdf", "2026-10-21", "pratiche", 90, "Il CV deve essere datato e firmato. Le pubblicazioni vanno elencate una per una con il pdf allegato. I titoli valgono fino a 40 punti."],
     [2, "s_conc7", "Concorso: compilare e firmare la domanda (Allegato A)", "2026-10-23", "pratiche", 45, "Senza firma la domanda è nulla."],
     [2, "s_conc8", "Concorso: pagare i 10 euro su pagoPA Sapienza", "2026-10-24", "pratiche", 10, "Portale pagamenti, Iscrizione concorso pubblico, causale con il codice 09. Serve la ricevuta."],
     [2, "s_conc9", "Concorso: inviare la domanda dalla PEC personale", "2026-10-26", "pratiche", 20, "A protocollosapienza@cert.uniroma1.it, oggetto: Domanda concorso pubblico 15/TECNOLOGI/T-IND-2026 - codice: 09. Non vale una PEC istituzionale."],
+    [3, "s_conc0", "SCADENZA domanda concorso tecnologo (entro le 23:59)", "2026-11-04", "pratiche", 0, "PEC personale, Allegato A firmato, CV, pubblicazioni con pdf, ricevuta dei 10 euro."],
     [1, "s_conc3", "Concorso, studiare: Statuto Sapienza (organi e funzioni)", "2026-10-28", "pratiche", 60, "Rettore, Direttore generale, Senato, CdA, Dipartimento. È la domanda che esce quasi sempre all’orale."],
     [1, "s_conc4", "Concorso, studiare: legislazione universitaria", "2026-11-01", "pratiche", 60, "Autonomia, organi ex L. 240/2010, ANVUR, Nucleo, terza missione."],
     [1, "s_conc5", "Concorso, studiare: gestione lab, acquisti, trasferimento tecnologico", "2026-11-03", "pratiche", 60, "Acquisto sotto e sopra soglia, gestione di un progetto, brevetti e TRL."],
@@ -719,8 +720,9 @@ button { -webkit-tap-highlight-color: transparent; }
     if (S.status !== "ready" || !S.db || seedDone === null || seedDone >= SEED_VER) return;
     var prev = seedDone; seedDone = SEED_VER;
     SEED_TASKS.forEach(function (x, i) {
+      if (x[0] <= prev) return;
       var ref = S.db.doc("tasks/" + x[1]);
-      queue("seed:" + x[1], function () { return ref.update({ title: x[2], date: x[3], area: x[4], kind: "todo", mins: x[5], note: x[6], createdAt: new Date().toISOString(), order: 5000 + i }); });
+      queue("seed:" + x[1], function () { return ref.update({ title: x[2], date: x[3], area: x[4], kind: x[1] === "s_conc0" ? "scadenza" : "todo", mins: x[5], note: x[6], createdAt: new Date().toISOString(), order: 5000 + i }); });
     });
     if (prev < 1) {
       queue("seed:greta", function () { return S.db.collection("projects").doc("e07").set({ title: "Tesi di Greta Cecchetelli", type: "esperimento", stage: "corso", next: "Capire a che punto è, risultati sul Drive, poi deve iniziare a scrivere.", order: 7, createdAt: new Date().toISOString() }); });
