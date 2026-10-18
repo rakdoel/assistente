@@ -353,7 +353,7 @@ button { -webkit-tap-highlight-color: transparent; }
     </button>
     <button type="button" class="tab" data-act="tab" data-tab="coach">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 4.6 4.6 1.9-4.6 1.9L12 16.5l-1.9-4.6L5.5 10l4.6-1.9z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
-      Coach
+      Assistente
     </button>
   </div>
 </nav>
@@ -375,7 +375,7 @@ button { -webkit-tap-highlight-color: transparent; }
         <label class="field"><span>Tipo</span><select id="f-kind"><option value="todo">Da fare</option><option value="impegno">Impegno fisso</option><option value="scadenza">Scadenza</option></select></label>
       </div>
       <label class="field"><span>Lavoro collegato</span><select id="f-project"></select></label>
-      <label class="toggle"><input id="f-rogna" type="checkbox"> È una rogna, il coach mi sprona</label>
+      <label class="toggle"><input id="f-rogna" type="checkbox"> È una rogna, l'assistente mi sprona</label>
       <label class="toggle"><input id="f-repeat" type="checkbox"> Si ripete ogni settimana, stesso giorno</label>
       <label class="field"><span>Note</span><textarea id="f-note" placeholder="Dettagli, cosa portare, a chi chiedere"></textarea></label>
       <details class="more" id="f-more">
@@ -635,7 +635,7 @@ button { -webkit-tap-highlight-color: transparent; }
       '<text x="38" y="44" text-anchor="middle">' + done + "/" + total + "</text></svg>";
   }
   function coachSnippet() {
-    var d = S.coachDoc, h = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Il coach</b><span>" +
+    var d = S.coachDoc, h = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Assistente</b><span>" +
       (d && d.at ? "Ultimo consiglio " + stamp(d.at.slice(0, 10)) : "Non ha ancora fatto il punto") + "</span></div></div>"];
     if (d && d.message) h.push("<p>" + esc(d.message.length > 260 ? d.message.slice(0, 258) + "…" : d.message) + "</p>");
     else h.push("<p>Chiedigli di fare il punto: guarda il carico, ti propone cosa spostare e quando muoverti.</p>");
@@ -781,8 +781,8 @@ button { -webkit-tap-highlight-color: transparent; }
       '<div class="bstat st-' + (freeDays.length >= need ? "green" : freeDays.length ? "yellow" : "red") + '"><b>' + freeDays.length + "</b><span>" + (freeDays.length === 1 ? "giorno libero" : "giorni liberi") + "</span></div>" +
       '<div class="bstat st-' + (evenings >= 5 ? "red" : evenings >= 3 ? "yellow" : "green") + '"><b>' + evenings + "</b><span>" + (evenings === 1 ? "sera di lavoro dopo le 18" : "sere di lavoro dopo le 18") + "</span></div>" +
       '<div class="bstat st-' + (weekends >= 3 ? "red" : weekends ? "yellow" : "green") + '"><b>' + weekends + "</b><span>" + (weekends === 1 ? "giorno di weekend con lavoro" : "giorni di weekend con lavoro") + "</span></div></div>" +
-      '<p class="bnote">' + (freeDays.length ? "Liberi: " + freeDays.map(stamp).join(", ") + "." : "Nessun giorno libero in vista.") + " Il coach può ricalibrare il carico per te.</p>" +
-      (S.sampleState === "ok" ? '<div class="actions"><button type="button" class="btn primary" data-act="coach-run" data-mode="punto">Chiedi al coach di ricalibrare</button></div>' : "") + "</section>");
+      '<p class="bnote">' + (freeDays.length ? "Liberi: " + freeDays.map(stamp).join(", ") + "." : "Nessun giorno libero in vista.") + " L'assistente può ricalibrare il carico per te.</p>" +
+      (S.sampleState === "ok" ? '<div class="actions"><button type="button" class="btn primary" data-act="coach-run" data-mode="punto">Chiedi all'assistente di ricalibrare</button></div>' : "") + "</section>");
     return html.join("");
   }
 
@@ -840,7 +840,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
   /* --- coach ---------------------------------------------------------------------------- */
   var RULES = [
-    "Sei il coach personale di Leo, dottorando in patologia vegetale alla Sapienza di Roma. Abita a Velletri e fa avanti e indietro con Roma.",
+    "Sei l'assistente personale di Leo, dottorando in patologia vegetale alla Sapienza di Roma. Abita a Velletri e fa avanti e indietro con Roma.",
     "Lo aiuti a gestire lavoro e vita: tenere il carico sostenibile, proteggere giorni liberi per camminare e per i suoi hobby, e spronarlo sulle rogne che rimanda (pratiche, rimborsi, burocrazia).",
     "Scrivi in italiano, con tono diretto, caldo e un po' ironico, come un amico pratico. Frasi brevi. Niente trattini lunghi, niente elenchi puntati, niente prediche, niente frasi fatte.",
     "Usa solo i dati qui sotto: non inventare impegni, persone o scadenze. Le date sono nel formato AAAA-MM-GG.",
@@ -937,12 +937,12 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   function coachErrText(e) {
     var c = e && e.code;
-    if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" || c === "capability_disabled" || c === "capability_removed") { S.sampleState = "none"; return "Il coach non può usare Claude da questa pagina."; }
+    if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" || c === "capability_disabled" || c === "capability_removed") { S.sampleState = "none"; return "L'assistente non può usare Claude da questa pagina."; }
     if (c === "rate_limited") return "Troppe richieste per ora. Riprova tra un po'.";
     if (c === "session_expired") return "Devi rientrare in Claude per usare il coach.";
     if (c === "invalid_json" || c === "empty_completion") return "La risposta è arrivata storta. Riprova.";
     if (c === "cancelled") return "";
-    return "Il coach non ha risposto. Riprova tra poco.";
+    return "L'assistente non ha risposto. Riprova tra poco.";
   }
   function runCoach(mode) {
     if (!S.sample || S.coachBusy) return;
@@ -982,16 +982,16 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   function renderCoach() {
     var html = [], d = S.coachDoc, t = todayStr();
-    html.push('<header class="top"><div class="brand">Coach</div><h1 class="big">Ti do una mano</h1><p class="summary">Guarda il calendario e i lavori, ti propone cosa spostare, ti trova tempo per camminare e ti sprona sulle rogne. Le proposte le applichi tu.</p></header>');
+    html.push('<header class="top"><div class="brand">Assistente</div><h1 class="big">Ti do una mano</h1><p class="summary">Guarda il calendario e i lavori, ti propone cosa spostare, ti trova tempo per camminare e ti sprona sulle rogne. Le proposte le applichi tu.</p></header>');
     if (S.sampleState === "none") {
-      html.push('<section class="panel"><p class="empty">Il coach funziona aprendo il quaderno da claude.ai o dall\'app di Claude, e usa il tuo account Claude. Da qui non è disponibile.</p></section>');
+      html.push('<section class="panel"><p class="empty">L'assistente funziona aprendo il quaderno da claude.ai o dall\'app di Claude, e usa il tuo account Claude. Da qui non è disponibile.</p></section>');
     } else {
       var busy = !!S.coachBusy;
       html.push('<div class="modes">' +
         '<button type="button" class="mode" data-act="coach-run" data-mode="punto"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><b>Fai il punto</b><span>Carico e cosa spostare</span></button>' +
         '<button type="button" class="mode" data-act="coach-run" data-mode="sprona"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></svg><b>Spronami</b><span>Togliti una rogna</span></button>' +
         '<button type="button" class="mode" data-act="coach-run" data-mode="tempo"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-11 4 6 3-4 5 9z"/><circle cx="17" cy="5" r="2"/></svg><b>Muoviti</b><span>Movimento e buchi liberi</span></button></div>');
-      var c = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Il coach</b><span>" +
+      var c = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Assistente</b><span>" +
         (busy ? "Sto pensando…" : d && d.at ? (d.mode === "sprona" ? "Spronata" : d.mode === "tempo" ? "Movimento" : "Il punto") + " del " + stamp(d.at.slice(0, 10)) : "Scegli cosa ti serve qui sopra") + "</span></div></div>"];
       if (busy) c.push('<p class="thinking">Guardo il calendario e i lavori. Ci vuole qualche secondo.</p><div class="actions"><button type="button" class="btn" data-act="coach-stop">Ferma</button></div>');
       else if (S.coachErr) c.push('<p class="warn">' + esc(S.coachErr) + "</p>");
@@ -1016,7 +1016,7 @@ button { -webkit-tap-highlight-color: transparent; }
         if (m.role === "assistant" && m.actions && m.actions.length) ch.push(actsHtml(m.actions, m.applied || [], "chat:" + i));
       });
       if (S.chatBusy) ch.push('<div class="bub ai thinking">Sto pensando…</div>');
-      ch.push('</div><form class="chatform" id="chatform"><input id="chat-in" type="text" autocomplete="off" placeholder="Scrivi al coach" value="' + esc(S.chatDraft) + '"' + (S.chatBusy ? " disabled" : "") + '><button type="submit" class="btn primary"' + (S.chatBusy ? " disabled" : "") + ">Invia</button></form></section>");
+      ch.push('</div><form class="chatform" id="chatform"><input id="chat-in" type="text" autocomplete="off" placeholder="Scrivi all'assistente" value="' + esc(S.chatDraft) + '"' + (S.chatBusy ? " disabled" : "") + '><button type="submit" class="btn primary"' + (S.chatBusy ? " disabled" : "") + ">Invia</button></form></section>");
       html.push(ch.join(""));
     }
     var rogne = S.tasks.filter(function (x) { return x.rogna && !x.done; });
