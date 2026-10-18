@@ -278,6 +278,19 @@ button { -webkit-tap-highlight-color: transparent; }
 .bub { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .bub.me { align-self: flex-end; background: linear-gradient(135deg, var(--grad-a), var(--accent)); color: var(--accent-ink); border-bottom-right-radius: 4px; }
 .bub.ai { align-self: flex-start; background: var(--sheet); border: 1px solid var(--rule); border-bottom-left-radius: 4px; }
+.qadd { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.qadd input { font: inherit; font-size: 16px; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 12px 14px; min-width: 0; box-shadow: var(--shadow); }
+.coach.slim { padding: 14px; gap: 10px; }
+.coach.slim .who { align-items: flex-start; }
+.coach.slim .av { width: 52px; height: 52px; border-radius: 18px; }
+.coach.slim .av svg { width: 44px; height: 44px; }
+.coach.slim .who b { font-size: 15px; }
+.coach.slim .who div span { font-size: 14px; color: var(--ink); line-height: 1.4; margin-top: 2px; }
+.nlines { display: flex; flex-direction: column; gap: 8px; }
+.nl { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: baseline; text-align: left; font: inherit; color: var(--ink); background: var(--st-bg, var(--sheet)); border: 1px solid var(--rule); border-radius: 16px; padding: 11px 14px; cursor: pointer; }
+.nl span { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--st-fg, var(--muted)); }
+.nl b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nl i { font-style: normal; font-size: 13px; color: var(--muted); }
 .chatform { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .chatform input { font: inherit; font-size: 16px; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 10px 12px; min-width: 0; }
 .rogne { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -636,14 +649,10 @@ button { -webkit-tap-highlight-color: transparent; }
       '<text x="38" y="44" text-anchor="middle">' + done + "/" + total + "</text></svg>";
   }
   function coachSnippet() {
-    var d = S.coachDoc, h = ['<section class="coach"><div class="who"><span class="av">' + PINO + "</span><div><b>Pino</b><span>" +
-      (d && d.at ? "Ultimo consiglio " + stamp(d.at.slice(0, 10)) : "Non ha ancora fatto il punto") + "</span></div></div>"];
-    if (d && d.message) h.push("<p>" + esc(d.message.length > 260 ? d.message.slice(0, 258) + "…" : d.message) + "</p>");
-    else h.push("<p>Chiedigli di fare il punto: guarda il carico, ti propone cosa spostare e quando muoverti.</p>");
-    if (S.sampleState === "ok") {
-      h.push('<div class="actions"><button type="button" class="btn primary" data-act="coach-run" data-mode="sprona">Spronami</button><button type="button" class="btn" data-act="coach-run" data-mode="punto">Fai il punto</button><button type="button" class="btn" data-act="coach-run" data-mode="tempo">Muoviti</button>' +
-        (d && d.actions && d.actions.length ? '<button type="button" class="btn" data-act="tab" data-tab="coach">Vedi le proposte</button>' : "") + "</div>");
-    }
+    var d = S.coachDoc, msg = d && d.message ? d.message : "", short = msg;
+    if (msg.length > 150) { var cut = msg.slice(0, 150), k = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? ")); short = (k > 60 ? cut.slice(0, k + 1) : cut.replace(/\s+\S*$/, "") + "…"); }
+    var h = ['<section class="coach slim"><div class="who"><span class="av">' + PINO + "</span><div><b>Pino</b><span>" + (short ? esc(short) : "Dimmi cosa ti serve e ti dico da dove partire.") + "</span></div></div>"];
+    h.push('<div class="actions">' + (S.sampleState === "ok" ? '<button type="button" class="btn primary" data-act="coach-run" data-mode="punto">Da dove parto?</button>' : "") + '<button type="button" class="btn" data-act="tab" data-tab="coach">Parla con Pino</button></div>');
     return h.join("") + "</section>";
   }
   function moveFold(ws, t) {
@@ -663,6 +672,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var t = todayStr(), map = groupByDate(all), info = dayInfo(t, map), late = lateList(all), html = [];
     var todayItems = info.items, doneN = todayItems.filter(function (e) { return e.done; }).length;
     html.push('<header class="top"><div class="brand">' + esc(longDate(t)) + '</div><h1 class="big">' + esc(greeting()) + "</h1></header>");
+    html.push('<form class="qadd" id="qaddform"><input id="qadd-in" type="text" autocomplete="off" placeholder="Aggiungi una cosa…" value="' + esc(S.qaddDraft || "") + '"' + (S.qaddBusy ? " disabled" : "") + '><button type="submit" class="btn primary"' + (S.qaddBusy ? " disabled" : "") + ">" + (S.qaddBusy ? "…" : "Aggiungi") + "</button></form>");
     var line = todayItems.length === 0 ? "Oggi non hai niente in programma. Tempo tuo." : doneN === todayItems.length ? "Hai finito tutto quello che c'era per oggi." : "Ti restano " + (todayItems.length - doneN) + (todayItems.length - doneN === 1 ? " cosa" : " cose") + " per oggi.";
     var rem = todayItems.filter(function (e) { return !e.done; }), remMins = 0, allKnown = rem.length > 0;
     rem.forEach(function (e) { if (e.task.mins) remMins += e.task.mins; else allKnown = false; });
@@ -671,28 +681,12 @@ button { -webkit-tap-highlight-color: transparent; }
       (late.length ? '<button type="button" class="chip st-red" data-act="tab" data-tab="settimana" style="cursor:pointer">' + late.length + " indietro</button>" : "") + "</div></div></section>");
     html.push(todayItems.length ? '<section class="sec">' + cardList(todayItems, "day") + "</section>" : "");
     html.push(coachSnippet());
-
-    var tiles = [];
-    var dl = all.filter(function (e) { return e.task.kind === "scadenza" && !e.done && !e.rec && e.date; }).sort(byDateCmp)[0];
-    if (dl) {
-      var dn = diffDays(t, dl.date), ds = deadlineStatus(dn);
-      tiles.push('<button type="button" class="tile st-' + ds.c + '" data-act="goday" data-date="' + dl.date + '"><span class="k">Prossima scadenza</span><span class="v sm">' + esc(dl.task.title) + '</span><span class="s">' + cap(countdown(dn)) + ", " + esc(stamp(dl.date)) + "</span></button>");
-    } else tiles.push('<div class="tile st-green"><span class="k">Scadenze</span><span class="v sm">Nessuna in vista</span><span class="s">Respira</span></div>');
-    var free = null;
-    for (var i = 0; i < 35; i++) { var dd = addDays(t, i); if (dayInfo(dd, map).free) { free = dd; break; } }
-    if (free) { var fn = diffDays(t, free); tiles.push('<button type="button" class="tile st-green" data-act="goday" data-date="' + free + '"><span class="k">Giorno libero</span><span class="v">' + (fn === 0 ? "Oggi" : fn === 1 ? "Domani" : esc(stamp(free))) + '</span><span class="s">' + (fn > 1 ? cap(countdown(fn)) + ", goditelo" : "Goditelo") + "</span></button>"); }
-    else tiles.push('<button type="button" class="tile st-yellow" data-act="tab" data-tab="calendario"><span class="k">Giorno libero</span><span class="v sm">Nessuno nelle prossime 5 settimane</span><span class="s">Scegline uno</span></button>');
-    var me = all.filter(function (e) { return e.task.area === "personale" && !e.done && e.date && e.date >= t; }).sort(byDateCmp)[0];
-    if (me) tiles.push('<button type="button" class="tile st-green" data-act="goday" data-date="' + me.date + '"><span class="k">Tempo per te</span><span class="v sm">' + esc(me.task.title) + '</span><span class="s">' + cap(countdown(diffDays(t, me.date))) + "</span></button>");
-    else tiles.push('<button type="button" class="tile st-yellow" data-act="coach-run" data-mode="tempo"><span class="k">Tempo per te</span><span class="v sm">Niente in programma</span><span class="s">Tocca e il coach ti trova un buco</span></button>');
-    var steps = S.tasks.filter(function (x) { return x.area === "revisione" && x.kind !== "scadenza" && !x.repeat; });
-    if (steps.length) {
-      var dn2 = steps.filter(function (x) { return x.done; }).length, behind = steps.filter(function (x) { return !x.done && x.date && x.date < t; }).length;
-      var rc = dn2 === steps.length ? "blue" : behind > 1 ? "red" : behind === 1 ? "yellow" : "";
-      tiles.push('<button type="button" class="tile' + (rc ? " st-" + rc : "") + '" data-act="tab" data-tab="settimana"><span class="k">Revisione JPP</span><span class="v">' + dn2 + "/" + steps.length + '</span><span class="s">' +
-        (dn2 === steps.length ? "finita" : behind ? behind + (behind === 1 ? " passo indietro" : " passi indietro") : "sei in linea") + '</span><span class="tbar"><span style="width:' + Math.round(dn2 / steps.length * 100) + '%"></span></span></button>');
-    }
-    html.push('<div class="tiles">' + tiles.join("") + "</div>");
+    var dl = all.filter(function (e) { return e.task.kind === "scadenza" && !e.done && !e.rec && e.date && e.date >= t; }).sort(byDateCmp)[0];
+    var undated = all.filter(function (e) { return !e.date && !e.done; }).length;
+    var ln = [];
+    if (dl) { var dn = diffDays(t, dl.date); ln.push('<button type="button" class="nl st-' + deadlineStatus(dn).c + '" data-act="goday" data-date="' + dl.date + '"><span>Prossima scadenza</span><b>' + esc(dl.task.title) + "</b><i>" + esc(cap(countdown(dn))) + "</i></button>"); }
+    if (undated) ln.push('<button type="button" class="nl" data-act="tab" data-tab="lavori"><span>Senza data</span><b>' + undated + (undated === 1 ? " cosa da piazzare" : " cose da piazzare") + "</b><i>Apri</i></button>");
+    if (ln.length) html.push('<div class="nlines">' + ln.join("") + "</div>");
     return html.join("");
   }
 
@@ -846,12 +840,15 @@ button { -webkit-tap-highlight-color: transparent; }
     "Scrivi in italiano, con tono diretto, caldo e un po' ironico, come un amico pratico. Frasi brevi. Niente trattini lunghi, niente elenchi puntati, niente prediche, niente frasi fatte.",
     "Usa solo i dati qui sotto: non inventare impegni, persone o scadenze. Le date sono nel formato AAAA-MM-GG.",
     "Movimento. Leo sta ricominciando a muoversi dopo uno stop di mesi e fa fatica a riprendere. Non parlare mai di peso, dieta o aspetto fisico, e niente sensi di colpa per lo stop. Conta la costanza, non l'intensità: una camminata di venti minuti vale. Riparti piano, il prossimo movimento è il più importante e va messo presto. Una settimana saltata non azzera niente.",
+    "Priorità. Il tuo compito principale è aiutare Leo a portare avanti TUTTE le sue attività: lavoro, articoli, esperimenti, pratiche, scuole, messaggi da mandare. Ragiona prima su cosa è urgente e cosa si può togliere o spostare. Il movimento è una parte della vita di Leo, non il tema centrale: nelle risposte generali vale al massimo una frase finale.",
+    "Brevità. Messaggi di due o tre frasi brevi, senza introduzioni e senza ripetere i dati che Leo già vede. Se serve un elenco di cose, mettile come azioni, non nel testo.",
+    "Non insistere sul movimento. Proponi al massimo una o due uscite per risposta, solo se alla settimana ne mancano rispetto all'obiettivo, e mai uscite aggiuntive se quelle già fatte o già in programma raggiungono l'obiettivo. Nei messaggi che non riguardano il movimento, citalo al massimo con mezza frase.",
     "Bilancia il movimento con il carico. Giorno Carico o dopo giornate pesanti: se ha già raggiunto l'obiettivo della settimana digli chiaramente di riposare; se è fermo da giorni proponi comunque una camminata corta per scaricare lo stress, anche senza voglia. Giorno Libero o Leggero: è il momento giusto per l'uscita più lunga o per la palestra. Non mettere due uscite impegnative di fila.",
     "Nei giorni a Roma il momento naturale è la palestra o una camminata a Roma prima di prendere il treno per tornare; nei giorni a casa, una camminata a Velletri. Non inventare orari dei treni.",
     "Durate. Molte voci hanno una durata stimata in minuti. Usala per dire a Leo quanto tempo serve oggi e che dopo è libero. Raggruppa le cose brevi nello stesso momento invece di sparpagliarle, e non lasciare che una cosa da trenta minuti si trascini per tutta la giornata. Se a una voce manca la durata puoi stimarla con un'azione estimate.",
     "Regole per le proposte: non spostare impegni fissi, scadenze o voci ripetute; non mettere niente nel passato o in un giorno di riposo; le cose di laboratorio vanno nei giorni in lab; non mettere lavoro dopo le 19 o nel weekend se puoi evitarlo."
   ].join("\n");
-  var JSON_SPEC = 'Rispondi SOLO con un oggetto JSON: {"message": "testo per Leo, al massimo 600 caratteri", "actions": [...]}. Ogni azione è uno di questi oggetti:\n' +
+  var JSON_SPEC = 'Rispondi SOLO con un oggetto JSON: {"message": "testo per Leo, al massimo 350 caratteri, 2 o 3 frasi brevi", "actions": [...]}. Ogni azione è uno di questi oggetti:\n' +
     '{"type":"move","id":"<id di una voce esistente>","date":"AAAA-MM-GG","why":"motivo in poche parole"}\n' +
     '{"type":"estimate","id":"<id di una voce senza durata>","mins":15|30|45|60|90|120|180,"why":"..."} per stimare quanto ci vuole\n' +
     '{"type":"rest","date":"AAAA-MM-GG","why":"..."} per tenere libero un giorno\n' +
@@ -890,7 +887,7 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   function promptFor(mode) {
     var task = {
-      punto: "COMPITO: fai il punto delle prossime due settimane. Di' in poche frasi dove il carico è troppo, cosa rischia di scappare e quale rogna togliersi per prima. Proponi spostamenti concreti per avere almeno i giorni liberi dell'obiettivo e piazza le voci senza data più urgenti. Se c'è spazio aggiungi un momento per camminare. Se a voci di oggi o dei prossimi giorni manca la durata, stimala con azioni estimate e di' quanto tempo serve in totale oggi.",
+      punto: "COMPITO: fai il punto delle prossime due settimane. Di' in poche frasi dove il carico è troppo, cosa rischia di scappare e quale rogna togliersi per prima. Proponi spostamenti concreti per avere almeno i giorni liberi dell'obiettivo e piazza le voci senza data più urgenti. Parla soprattutto del lavoro, e al massimo accenna a un momento per camminare in una frase. Se a voci di oggi o dei prossimi giorni manca la durata, stimala con azioni estimate e di' quanto tempo serve in totale oggi.",
       tempo: "COMPITO: pianifica il movimento di Leo. Prima di tutto di' in una frase cosa conviene fare OGGI (riposare davvero, camminata corta per scaricare, oppure uscita più lunga), tenendo conto del carico di oggi e di quante volte si è già mosso. Poi proponi fino a 4 uscite nelle prossime due settimane come azioni add con area personale, kind todo e move valorizzato, rispettando l'obiettivo settimanale, scegliendo i giorni e i momenti migliori in base al calendario (a Roma prima del treno, a casa nei giorni leggeri) e senza mai metterle in giorni di riposo o di carico pieno. Spiega in breve la logica.",
       sprona: 'COMPITO: scegli UNA sola rogna (o, se non ce ne sono, la cosa rimandata da più tempo) e spronalo a togliersela oggi, con ironia e senza sensi di colpa. Rispondi SOLO con JSON: {"message": "al massimo 350 caratteri", "taskId": "<id della voce scelta>", "firstStep": "un primo passo concreto da 5 minuti"}.'
     }[mode];
@@ -900,6 +897,9 @@ button { -webkit-tap-highlight-color: transparent; }
   function sanitizeActions(arr) {
     if (!Array.isArray(arr)) return [];
     var t = todayStr(), out = [];
+    var ws0 = mondayOf(t), wk1 = addDays(ws0, 7), goal = life().moveGoal || 3;
+    var planned = S.tasks.filter(function (x) { return x.move && !x.done && x.date && x.date >= ws0 && x.date < wk1; }).length;
+    var leftThis = Math.max(0, goal - weekMoves(ws0) - planned), leftNext = Math.min(goal, 2), walks = 0;
     arr.slice(0, 8).forEach(function (a) {
       if (!a || typeof a !== "object") return;
       var date = typeof a.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : null, why = str(a.why).slice(0, 160);
@@ -916,6 +916,11 @@ button { -webkit-tap-highlight-color: transparent; }
       } else if (a.type === "rest") out.push({ type: "rest", date: date, why: why });
       else if (a.type === "add") {
         var title = str(a.title).slice(0, 120); if (!title) return;
+        if (a.move === "cammino" || a.move === "palestra") {
+          if (walks >= 2) return;
+          if (date < wk1) { if (leftThis <= 0) return; leftThis--; } else if (date < addDays(wk1, 7)) { if (leftNext <= 0) return; leftNext--; } else return;
+          walks++;
+        }
         out.push({ type: "add", title: title, date: date, time: /^\d{2}:\d{2}$/.test(String(a.time || "")) ? a.time : null,
           area: AREA_LABEL[a.area] ? a.area : "personale", kind: a.kind === "impegno" ? "impegno" : "todo", move: a.move === "cammino" || a.move === "palestra" ? a.move : null, mins: [10, 15, 30, 45, 60, 90, 120, 180, 240].indexOf(Number(a.mins)) !== -1 ? Number(a.mins) : null, why: why });
       }
@@ -960,6 +965,24 @@ button { -webkit-tap-highlight-color: transparent; }
       S.coachDoc = doc;
       queue("coach", function () { return S.db.doc("meta/coach").set(doc); });
     }, function (e) { S.coachErr = coachErrText(e); }).then(function () { S.coachBusy = null; S.coachCtl = null; render(); });
+  }
+  var QADD_SPEC = 'Rispondi SOLO con un oggetto JSON: {"title":"cosa fare, breve, in italiano, all\'infinito o imperativo","date":"AAAA-MM-GG oppure null se non è chiaro","time":"HH:MM oppure null","area":"lab|scuole|revisione|articoli|pratiche|messaggi|personale","kind":"todo|impegno|scadenza","mins":15|30|45|60|90|120 oppure null}. kind è impegno se ha un orario o è un appuntamento, scadenza se è una consegna con data limite, altrimenti todo. Date relative (domani, giovedì, tra due settimane) calcolale da OGGI.';
+  function quickAdd(text) {
+    if (!text || S.qaddBusy || !S.db) return;
+    var t = todayStr();
+    function save(o) {
+      var area = AREA_LABEL[o.area] ? o.area : "personale", kind = o.kind === "impegno" || o.kind === "scadenza" ? o.kind : "todo";
+      var date = typeof o.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.date) ? o.date : null, mins = [10, 15, 30, 45, 60, 90, 120, 180, 240].indexOf(Number(o.mins)) !== -1 ? Number(o.mins) : null;
+      var ref = S.db.collection("tasks").doc(), body = { title: String(o.title || text).slice(0, 140), area: area, kind: kind, done: false, createdAt: new Date().toISOString(), order: Date.now() };
+      if (date) body.date = date; if (/^\d{2}:\d{2}$/.test(String(o.time || ""))) body.time = o.time; if (mins) body.mins = mins;
+      return queue("t:" + ref.id, function () { return ref.set(body); }).then(function () { toast("Aggiunta: " + body.title + (date ? ", " + stamp(date) : ", senza data")); });
+    }
+    S.qaddBusy = true; render();
+    var done = function () { S.qaddBusy = false; S.qaddDraft = ""; render(); };
+    if (S.sample && S.sampleState === "ok") {
+      S.sample.json("Sei l'assistente di Leo. OGGI: " + t + " (" + GG[parse(t).getDay()] + ").\nLeo ha scritto: “" + text + "”\nTrasformalo in una voce del suo quaderno. " + QADD_SPEC, { cache: false, modelTier: "quick" })
+        .then(function (res) { return save(res && typeof res === "object" ? res : { title: text }); }, function () { return save({ title: text }); }).then(done, done);
+    } else save({ title: text }).then(done, done);
   }
   function sendChat(text) {
     if (!S.sample || S.chatBusy || !text) return;
@@ -1045,8 +1068,9 @@ button { -webkit-tap-highlight-color: transparent; }
   function setTab(tab) { S.tab = tab; S.open = null; S.confirm = null; try { localStorage.setItem("quaderno.tab", tab); } catch (e) {} render(); window.scrollTo(0, 0); }
 
   /* --- azioni ---------------------------------------------------------------------------- */
-  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "chat-in") S.chatDraft = ev.target.value; });
+  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "chat-in") S.chatDraft = ev.target.value; if (ev.target && ev.target.id === "qadd-in") S.qaddDraft = ev.target.value; });
   document.addEventListener("submit", function (ev) {
+    if (ev.target && ev.target.id === "qaddform") { ev.preventDefault(); var qv = $("#qadd-in").value.trim(); if (qv) quickAdd(qv); return; }
     if (ev.target && ev.target.id === "chatform") { ev.preventDefault(); var v = $("#chat-in").value.trim(); if (v) sendChat(v); }
   });
   document.addEventListener("click", function (ev) {
@@ -1229,7 +1253,7 @@ button { -webkit-tap-highlight-color: transparent; }
   /* --- avvio --------------------------------------------------------------------------------- */
   render();
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
-  setInterval(function () { if (!document.hidden && $("#scrim").hidden && !S.coachBusy && document.activeElement && document.activeElement.id !== "chat-in") render(); }, 60000);
+  setInterval(function () { if (!document.hidden && $("#scrim").hidden && !S.coachBusy && document.activeElement && document.activeElement.id !== "chat-in" && document.activeElement.id !== "qadd-in") render(); }, 60000);
 
   var hasClaude = window.claude && typeof window.claude.use === "function";
   Promise.resolve(hasClaude ? window.claude.use("sample") : null).then(function (s) { S.sample = s; S.sampleState = s ? "ok" : "none"; render(); }, function () { S.sampleState = "none"; render(); });
