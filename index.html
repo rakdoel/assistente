@@ -701,6 +701,29 @@ button { -webkit-tap-highlight-color: transparent; }
       });
     });
   }
+  var SEED_VER = 1, seedDone = null;
+  var SEED_TASKS = [
+    ["s_greta1", "Capire a che punto è Greta con i risultati", "2026-10-19", "lab", 20, "Sentire Greta Cecchetelli: cosa ha già, cosa manca per la tesi."],
+    ["s_greta2", "Mettere i risultati di Greta sul Drive", "2026-10-21", "lab", 30, "Cartella condivisa con lei."],
+    ["s_greta3", "Dire a Greta di iniziare a scrivere la tesi", "2026-10-23", "lab", 15, "Prima l’indice, poi i metodi."],
+    ["s_conc1", "Concorso tecnologo cod. 09: verificare la scadenza e iscriversi", "2026-10-19", "pratiche", 30, "Bando 15/TECNOLOGI/T-IND-2026. Controllare la scadenza della domanda e il contributo, poi fare la domanda sul portale."],
+    ["s_conc2", "Concorso: preparare titoli e elenco pubblicazioni", "2026-10-22", "pratiche", 60, "Valgono fino a 40 punti (20 professionali, 12 culturali, 8 pubblicazioni). Serve il pdf allegato."],
+    ["s_conc3", "Concorso, studiare: Statuto Sapienza (organi e funzioni)", "2026-10-25", "pratiche", 60, "Rettore, Direttore generale, Senato, CdA, Dipartimento. È la domanda che esce quasi sempre all’orale."],
+    ["s_conc4", "Concorso, studiare: legislazione universitaria", "2026-10-29", "pratiche", 60, "Autonomia, organi ex L. 240/2010, ANVUR, Nucleo, terza missione."],
+    ["s_conc5", "Concorso, studiare: gestione lab, acquisti, trasferimento tecnologico", "2026-11-01", "pratiche", 60, "Acquisto sotto e sopra soglia, gestione di un progetto, brevetti e TRL."],
+    ["s_conc6", "Concorso, inglese: leggere e tradurre un abstract LC-HRMS", "2026-11-04", "pratiche", 30, "Brano di 80-150 parole."]];
+  function ensureSeed() {
+    if (S.status !== "ready" || !S.db || seedDone === null || seedDone >= SEED_VER) return;
+    seedDone = SEED_VER;
+    SEED_TASKS.forEach(function (x, i) {
+      var ref = S.db.collection("tasks").doc(x[0]);
+      queue("seed:" + x[0], function () { return ref.set({ title: x[1], date: x[2], area: x[3], kind: "todo", mins: x[4], note: x[5], done: false, createdAt: new Date().toISOString(), order: 5000 + i }); });
+    });
+    queue("seed:greta", function () { return S.db.collection("projects").doc("e07").set({ title: "Tesi di Greta Cecchetelli", type: "esperimento", stage: "corso", next: "Capire a che punto è, risultati sul Drive, poi deve iniziare a scrivere.", order: 7, createdAt: new Date().toISOString() }); });
+    if (S.projects.some(function (p) { return p.id === "e04"; })) queue("seed:thz", function () { return S.db.doc("projects/e04").update({ waiting: "Aspetto notizie di Del Grande, finché non risponde non si può fare niente." }); }); 
+    if (findTask("t31")) queue("seed:t31", function () { return S.db.doc("tasks/t31").update({ date: "2026-11-27" }); });
+    queue("seed:meta", function () { return S.db.doc("meta/seed").set({ v: SEED_VER }); });
+  }
   function renderOggi(all) {
     var t = todayStr(), map = groupByDate(all), info = dayInfo(t, map), late = lateList(all), html = [];
     var todayItems = info.items, doneN = todayItems.filter(function (e) { return e.done; }).length;
@@ -831,14 +854,14 @@ button { -webkit-tap-highlight-color: transparent; }
     var pipe = '<div class="pipe" style="--n:' + stages.length + '" aria-hidden="true">' + stages.map(function (s, i) { return '<span class="' + (i <= idx ? "on" : "") + '"></span>'; }).join("") + "</div>";
     var h = '<li class="pcard' + (st ? " st-" + st.c : "") + '" style="--ac:var(--a-' + (p.type === "esperimento" ? "lab" : "articoli") + ')"><button type="button" class="phead" data-act="popen"' + da + ' aria-expanded="' + open + '">' +
       '<span class="pstage">' + esc(stages[idx][1]) + " · " + (idx + 1) + " di " + stages.length + '</span><span class="ptitle">' + esc(p.title) + "</span>" + pipe +
-      (meta.length ? '<span class="pmeta">' + meta.join("") + "</span>" : "") +
-      (p.next ? '<span class="pnext"><b>Prossimo passo.</b> ' + esc(p.next) + "</span>" : "") +
-      (linked.length ? '<span class="plinks">' + linked.slice(0, 3).map(function (x) { return "<span><b>" + (x.date ? esc(stamp(x.date)) : "senza data") + "</b> " + esc(x.title) + "</span>"; }).join("") + "</span>"
-        : (isFinished(p) ? "" : '<span class="plinks"><span class="nocal">Non è in calendario</span></span>')) + "</button>" +
-      (!linked.length && !isFinished(p) && projGroup(p) === "you" ? '<div class="pquick"><button type="button" class="btn primary" data-act="pplan"' + da + ">Mettilo in calendario</button></div>" : "");
+      (p.waiting ? '<span class="pnext"><b>In attesa.</b> ' + esc(p.waiting) + "</span>" : p.next ? '<span class="pnext">' + esc(p.next) + "</span>" : "") +
+      (st && !isFinished(p) ? '<span class="pmeta"><span class="pill st-' + st.c + '"><i></i>' + esc(st.label) + "</span></span>" : "") + "</button>";
     if (open) {
       var d = [];
+      if (meta.length) d.push('<p class="pmeta">' + meta.join("") + "</p>");
       if (p.note) d.push('<p class="note">' + esc(p.note) + "</p>");
+      if (linked.length) d.push('<p class="plinks">' + linked.slice(0, 4).map(function (x) { return "<span><b>" + (x.date ? esc(stamp(x.date)) : "senza data") + "</b> " + esc(x.title) + "</span>"; }).join("") + "</p>");
+      else if (!isFinished(p)) d.push('<p class="plinks"><span class="nocal">Non è in calendario</span></p>');
       if (S.confirm === "p:" + p.id) d.push('<div class="confirm"><span>Eliminare questa scheda?</span><button type="button" class="btn danger" data-act="pdel-yes"' + da + '>Elimina</button><button type="button" class="btn" data-act="pdel-no"' + da + ">Annulla</button></div>");
       else {
         var acts = [];
@@ -853,7 +876,7 @@ button { -webkit-tap-highlight-color: transparent; }
     }
     return h + "</li>";
   }
-  function projGroup(p) { if (isFinished(p)) return "fin"; if (p.type !== "esperimento" && p.stage === "valutazione") return "wait"; return "you"; }
+  function projGroup(p) { if (isFinished(p)) return "fin"; if (p.waiting || (p.type !== "esperimento" && p.stage === "valutazione")) return "wait"; return "you"; }
   function projSortKey(p) {
     var ds = S.tasks.filter(function (x) { return x.project === p.id && !x.done && x.date; }).map(function (x) { return x.date; }).sort();
     return ds[0] || p.deadline || "9999-12-31";
@@ -870,8 +893,9 @@ button { -webkit-tap-highlight-color: transparent; }
       if (!list.length) return;
       html.push('<section class="sec"><div class="sec-head"><h2>' + title + '</h2><span class="chip">' + list.length + "</span></div>" + (hint ? '<p class="empty">' + hint + "</p>" : "") + '<ul class="cards">' + list.map(projCard).join("") + "</ul></section>");
     }
-    sec("Tocca a te", "", g.you);
-    sec("In attesa di altri", "Non dipende da te, ma controlla ogni tanto.", g.wait);
+    sec("Tocca a te", "Prima questi.", g.you.slice(0, 5));
+    if (g.you.length > 5) html.push('<details class="sec fold"><summary><span class="sec-head"><h2>Altri lavori</h2><span class="chip">' + (g.you.length - 5) + '</span></span></summary><ul class="cards">' + g.you.slice(5).map(projCard).join("") + "</ul></details>");
+    if (g.wait.length) html.push('<details class="sec fold"><summary><span class="sec-head"><h2>In attesa di altri</h2><span class="chip">' + g.wait.length + '</span></span></summary><ul class="cards">' + g.wait.map(projCard).join("") + "</ul></details>");
     if (g.fin.length) html.push('<details class="sec fold"><summary><span class="sec-head"><h2>Finiti</h2><span class="chip">' + g.fin.length + '</span></span></summary><ul class="cards">' + g.fin.map(projCard).join("") + "</ul></details>");
     if (!S.projects.length) html.push('<p class="empty">Nessun lavoro ancora. Aggiungi con il pulsante +.</p>');
     return html.join("");
@@ -1325,7 +1349,7 @@ button { -webkit-tap-highlight-color: transparent; }
     function ready() { if (got.tasks && got.projects && S.status !== "ready") { S.status = "ready"; render(); } }
     db.collection("tasks").onSnapshot(function (snap) {
       S.tasks = snap.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; });
-      got.tasks = true; if (S.status === "ready") render(); else ready(); ensureRoutines();
+      got.tasks = true; if (S.status === "ready") render(); else ready(); ensureRoutines(); ensureSeed();
     }, function () { S.status = "error"; render(); });
     db.collection("projects").onSnapshot(function (snap) {
       S.projects = snap.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; });
@@ -1336,6 +1360,7 @@ button { -webkit-tap-highlight-color: transparent; }
       if (S.status === "ready") render();
     }, function () {});
     db.doc("meta/settings").onSnapshot(function (s) { if (s.exists) { S.settings = Object.assign({ labDays: [1, 3, 5], freeDays: [], life: {} }, s.data()); if (S.status === "ready") render(); } }, function () {});
+    db.doc("meta/seed").onSnapshot(function (s) { seedDone = s.exists && s.data().v ? s.data().v : 0; ensureSeed(); }, function () { seedDone = 99; });
     db.doc("meta/routines").onSnapshot(function (s) { routSkip = s.exists && Array.isArray(s.data().skip) ? s.data().skip : []; ensureRoutines(); }, function () { routSkip = []; });
     db.doc("meta/chat").onSnapshot(function (s) {
       if (!S.chatLoaded) { S.chatLoaded = true; if (s.exists && Array.isArray(s.data().msgs) && !S.chat.length) { S.chat = s.data().msgs; if (S.status === "ready") render(); } }
