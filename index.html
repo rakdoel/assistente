@@ -846,6 +846,7 @@ button { -webkit-tap-highlight-color: transparent; }
     "Scrivi in italiano, con tono diretto, caldo e un po' ironico, come un amico pratico. Frasi brevi. Niente trattini lunghi, niente elenchi puntati, niente prediche, niente frasi fatte.",
     "Usa solo i dati qui sotto: non inventare impegni, persone o scadenze. Le date sono nel formato AAAA-MM-GG.",
     "Movimento. Leo sta ricominciando a muoversi dopo uno stop di mesi e fa fatica a riprendere. Non parlare mai di peso, dieta o aspetto fisico, e niente sensi di colpa per lo stop. Conta la costanza, non l'intensità: una camminata di venti minuti vale. Riparti piano, il prossimo movimento è il più importante e va messo presto. Una settimana saltata non azzera niente.",
+    "Non insistere sul movimento. Proponi al massimo una o due uscite per risposta, solo se alla settimana ne mancano rispetto all'obiettivo, e mai uscite aggiuntive se quelle già fatte o già in programma raggiungono l'obiettivo. Nei messaggi che non riguardano il movimento, citalo al massimo con mezza frase.",
     "Bilancia il movimento con il carico. Giorno Carico o dopo giornate pesanti: se ha già raggiunto l'obiettivo della settimana digli chiaramente di riposare; se è fermo da giorni proponi comunque una camminata corta per scaricare lo stress, anche senza voglia. Giorno Libero o Leggero: è il momento giusto per l'uscita più lunga o per la palestra. Non mettere due uscite impegnative di fila.",
     "Nei giorni a Roma il momento naturale è la palestra o una camminata a Roma prima di prendere il treno per tornare; nei giorni a casa, una camminata a Velletri. Non inventare orari dei treni.",
     "Durate. Molte voci hanno una durata stimata in minuti. Usala per dire a Leo quanto tempo serve oggi e che dopo è libero. Raggruppa le cose brevi nello stesso momento invece di sparpagliarle, e non lasciare che una cosa da trenta minuti si trascini per tutta la giornata. Se a una voce manca la durata puoi stimarla con un'azione estimate.",
@@ -900,6 +901,9 @@ button { -webkit-tap-highlight-color: transparent; }
   function sanitizeActions(arr) {
     if (!Array.isArray(arr)) return [];
     var t = todayStr(), out = [];
+    var ws0 = mondayOf(t), wk1 = addDays(ws0, 7), goal = life().moveGoal || 3;
+    var planned = S.tasks.filter(function (x) { return x.move && !x.done && x.date && x.date >= ws0 && x.date < wk1; }).length;
+    var leftThis = Math.max(0, goal - weekMoves(ws0) - planned), leftNext = Math.min(goal, 2), walks = 0;
     arr.slice(0, 8).forEach(function (a) {
       if (!a || typeof a !== "object") return;
       var date = typeof a.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : null, why = str(a.why).slice(0, 160);
@@ -916,6 +920,11 @@ button { -webkit-tap-highlight-color: transparent; }
       } else if (a.type === "rest") out.push({ type: "rest", date: date, why: why });
       else if (a.type === "add") {
         var title = str(a.title).slice(0, 120); if (!title) return;
+        if (a.move === "cammino" || a.move === "palestra") {
+          if (walks >= 2) return;
+          if (date < wk1) { if (leftThis <= 0) return; leftThis--; } else if (date < addDays(wk1, 7)) { if (leftNext <= 0) return; leftNext--; } else return;
+          walks++;
+        }
         out.push({ type: "add", title: title, date: date, time: /^\d{2}:\d{2}$/.test(String(a.time || "")) ? a.time : null,
           area: AREA_LABEL[a.area] ? a.area : "personale", kind: a.kind === "impegno" ? "impegno" : "todo", move: a.move === "cammino" || a.move === "palestra" ? a.move : null, mins: [10, 15, 30, 45, 60, 90, 120, 180, 240].indexOf(Number(a.mins)) !== -1 ? Number(a.mins) : null, why: why });
       }
