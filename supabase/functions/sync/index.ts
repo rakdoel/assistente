@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
           added++;
         }
         await upsert(mrows);
-        for (const f of fresh) seen.push(String(f.id));
+        if (!ai.startsWith("risposta")) for (const f of fresh) seen.push(String(f.id));
       }
     }
     await upsert([{ user_id: uid, col: "meta", id: "sync", data: { at: now, events: keep.size, added, seen: seen.slice(-500) }, updated_at: now }]);
