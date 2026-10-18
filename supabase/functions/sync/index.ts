@@ -115,15 +115,19 @@ Deno.serve(async (req) => {
         `{"mail":<numero della mail>,"title":"azione breve all'infinito o imperativo, in italiano, max 80 caratteri","date":"AAAA-MM-GG oppure null se non c'è una data esplicita","time":"HH:MM solo per gli impegni, altrimenti null","kind":"todo" (cosa da fare), "scadenza" (consegna con data limite) oppure "impegno" (riunione, lezione o appuntamento a un orario preciso),"area":"una tra ${AREAS.join(", ")}","mins":<minuti stimati, intero>,"note":"una frase di contesto"}.\n\n${list}`;
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-5-5", max_tokens: 1800, messages: [{ role: "user", content: prompt }] }),
+        body: JSON.stringify({ model: "claude-sonnet-5-5", max_tokens: 6000, messages: [{ role: "user", content: prompt }] }),
       });
       if (!r.ok) ai = "errore Claude " + r.status + ": " + (await r.text()).slice(0, 160);
       if (r.ok) {
         const out = await r.json();
         const text = (out.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
-        const m = text.match(/\[[\s\S]*\]/);
         let items: any[] = [];
-        try { items = m ? JSON.parse(m[0]) : []; } catch { items = []; ai = "risposta non leggibile: " + text.slice(0, 120); }
+        const m = text.match(/\[[\s\S]*\]/);
+        try { items = m ? JSON.parse(m[0]) : []; } catch { items = []; }
+        if (!items.length) {
+          // risposta tagliata o con testo attorno: recupero gli oggetti completi uno a uno
+          for (const o of text.match(/\{[^{}]*\}/g) || []) { try { const j = JSON.parse(o); if (j && j.title) items.push(j); } catch { /* salta */ } }
+        }
         if (!ai.startsWith("risposta")) ai = "ok, " + items.length + " trovate" + (items.length ? "" : ". Risposta di Claude: " + text.slice(0, 200));
         const mrows: any[] = [];
         for (const it of items.slice(0, 8)) {
