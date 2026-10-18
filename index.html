@@ -156,6 +156,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .btn.danger { color: var(--red); border-color: currentColor; }
 .btn:disabled { opacity: 0.55; cursor: default; }
 .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+.slot { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 16px 2px 8px; font-weight: 600; }
+.fold.quick { margin-top: 12px; }
+.fold.quick .slot { margin: 0; }
 .fold summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; padding: 2px 0; }
 .fold summary::-webkit-details-marker { display: none; }
 .fold summary::after { content: "+"; font-family: var(--f-mono); color: var(--muted); margin-left: auto; font-size: 18px; }
@@ -645,6 +648,20 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   function cardList(list, ctx) { return '<ul class="cards">' + list.map(function (e) { return taskCard(e, ctx); }).join("") + "</ul>"; }
 
+  function dayBlocks(items, ctx) {
+    if (items.length < 5) return cardList(items, ctx);
+    var slots = [["Mattina", []], ["Pomeriggio", []], ["Sera", []], ["Quando puoi", []]], quick = [];
+    items.forEach(function (e) {
+      var tm = e.task.time;
+      if (tm) slots[tm < "12:00" ? 0 : tm < "18:00" ? 1 : 2][1].push(e);
+      else if (!e.done && e.task.kind === "todo" && e.task.mins && e.task.mins <= 10) quick.push(e);
+      else slots[3][1].push(e);
+    });
+    var h = [];
+    slots.forEach(function (sl) { if (sl[1].length) h.push('<h3 class="slot">' + sl[0] + "</h3>" + cardList(sl[1], ctx)); });
+    if (quick.length) { var m = 0; quick.forEach(function (e) { m += e.task.mins; }); h.push('<details class="fold quick"><summary><span class="sec-head"><h3 class="slot">Cosette veloci</h3><span class="chip">' + quick.length + " · circa " + fmtMins(m) + "</span></span></summary>" + cardList(quick, ctx) + "</details>"); }
+    return h.join("");
+  }
   /* --- scheda Oggi --------------------------------------------------------------- */
   function greeting() { var h = new Date().getHours(); return h < 13 ? "Buongiorno, Leo" : h < 18 ? "Buon pomeriggio, Leo" : "Buonasera, Leo"; }
   function ring(done, total) {
@@ -742,7 +759,7 @@ button { -webkit-tap-highlight-color: transparent; }
     if (rem.length && remMins) line += allKnown ? " Ci vogliono circa " + fmtMins(remMins) + ", poi sei libero." : " Quelle stimate valgono circa " + fmtMins(remMins) + ".";
     html.push('<section class="panel hero">' + ring(doneN, todayItems.length) + '<div class="hero-t"><b>' + esc(line) + '</b><div class="chips">' + loadChip(info) + (isLabDay(t) ? '<span class="chip lab">In lab</span>' : "") + (isRomeDay(t) ? '<span class="chip">A Roma</span>' : "") +
       (late.length ? '<button type="button" class="chip st-red" data-act="tab" data-tab="settimana" style="cursor:pointer">' + late.length + " indietro</button>" : "") + "</div></div></section>");
-    html.push(todayItems.length ? '<section class="sec">' + cardList(todayItems, "day") + "</section>" : "");
+    html.push(todayItems.length ? '<section class="sec">' + dayBlocks(todayItems, "day") + "</section>" : "");
     html.push(coachSnippet());
     var dl = all.filter(function (e) { return e.task.kind === "scadenza" && !e.done && !e.rec && e.date && e.date >= t; }).sort(byDateCmp)[0];
     var undated = all.filter(function (e) { return !e.date && !e.done; }).length;
@@ -779,7 +796,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var sel = S.weekSel, si = dayInfo(sel, map);
     var p = ['<section class="panel"><div class="sec-head"><h2>' + esc(dayName(sel)) + "</h2>" + loadChip(si) + minsChip(si) + (isLabDay(sel) ? '<span class="chip lab">In lab</span>' : "") + (isRomeDay(sel) ? '<span class="chip">A Roma</span>' : "") + (movesOn(sel).length ? '<span class="chip st-blue">Mosso</span>' : "") + '<span class="stamp">' + esc(stamp(sel)) + "</span></div>"];
     if (si.rest && si.items.length) p.push('<p class="warn">È un giorno di riposo ma ci sono ' + si.items.length + (si.items.length === 1 ? " cosa" : " cose") + ". Puoi spostarle.</p>");
-    p.push(si.items.length ? cardList(si.items, sel < t ? "late" : "day") : '<p class="empty">' + (si.free ? "Niente in programma, goditela." : "Niente in programma.") + "</p>");
+    p.push(si.items.length ? dayBlocks(si.items, sel < t ? "late" : "day") : '<p class="empty">' + (si.free ? "Niente in programma, goditela." : "Niente in programma.") + "</p>");
     if (sel >= t) p.push('<div class="actions"><button type="button" class="btn" data-act="rest" data-date="' + sel + '">' + (si.rest ? "Togli il riposo" : "Segna come giorno di riposo") + '</button><button type="button" class="btn" data-act="rome" data-date="' + sel + '">' + (isRomeDay(sel) ? "Non vado a Roma" : "Vado a Roma") + "</button></div>");
     html.push(p.join("") + "</section>");
 
@@ -824,7 +841,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var sel = S.selDay, si = dayInfo(sel, map);
     var p = ['<section class="panel"><div class="sec-head"><h2>' + esc(dayName(sel)) + "</h2>" + loadChip(si) + minsChip(si) + (isLabDay(sel) ? '<span class="chip lab">In lab</span>' : "") + '<span class="stamp">' + esc(stamp(sel)) + "</span></div>"];
     if (si.rest && si.items.length) p.push('<p class="warn">È un giorno di riposo ma ci sono ' + si.items.length + (si.items.length === 1 ? " cosa" : " cose") + ". Puoi spostarle.</p>");
-    p.push(si.items.length ? cardList(si.items, sel < t ? "late" : "day") : '<p class="empty">' + (si.free ? "Niente in programma, goditela." : "Niente in programma.") + "</p>");
+    p.push(si.items.length ? dayBlocks(si.items, sel < t ? "late" : "day") : '<p class="empty">' + (si.free ? "Niente in programma, goditela." : "Niente in programma.") + "</p>");
     if (sel >= t) p.push('<div class="actions"><button type="button" class="btn" data-act="rest" data-date="' + sel + '">' + (si.rest ? "Togli il riposo" : "Segna come giorno di riposo") + '</button><button type="button" class="btn" data-act="rome" data-date="' + sel + '">' + (isRomeDay(sel) ? "Non vado a Roma" : "Vado a Roma") + "</button></div>");
     html.push(p.join("") + "</section>");
     var freeDays = [], evenings = 0, weekends = 0;
