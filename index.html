@@ -162,7 +162,11 @@ button { -webkit-tap-highlight-color: transparent; }
 .trip-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .trip-t span { color: var(--muted); font-size: 13px; }
 .trip-b { display: flex; align-items: center; gap: 6px; }
-.tripform { display: grid; grid-template-columns: 1fr 70px auto; gap: 8px; margin: 10px 0; }
+.tripform { display: grid; grid-template-columns: 1fr 70px; gap: 8px; margin: 10px 0; }
+.tripform .tripwhen { grid-column: 1 / -1; }
+.tripform .btn { padding: 10px 12px; }
+.tripq { margin: 12px 0 6px; color: var(--muted); font-size: 13px; }
+.tripn { display: flex; flex-wrap: wrap; gap: 6px; }
 .tripform input { min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); font: inherit; }
 .fold.quick .slot { margin: 0; }
 .fold summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; padding: 2px 0; }
@@ -466,7 +470,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
   var S = {
     db: null, sample: null, sampleState: "loading", status: "loading",
-    tasks: [], projects: [], moves: [], trips: [], tripName: "", tripDays: "", settings: { labDays: [1, 3, 5], freeDays: [], life: {} }, coachDoc: null,
+    tasks: [], projects: [], moves: [], trips: [], tripName: "", tripDays: "", tripWhen: "", settings: { labDays: [1, 3, 5], freeDays: [], life: {} }, coachDoc: null,
     tab: "oggi", calMonth: null, selDay: null, weekStart: null, weekSel: null,
     seg: "articolo", stageSel: { articolo: "scrittura", esperimento: "dafare" },
     open: null, confirm: null, editing: null, coachBusy: null, coachCtl: null, coachErr: "",
@@ -945,7 +949,7 @@ button { -webkit-tap-highlight-color: transparent; }
     "Usa solo i dati qui sotto: non inventare impegni, persone o scadenze. Le date sono nel formato AAAA-MM-GG.",
     "Movimento. Leo sta ricominciando a muoversi dopo uno stop di mesi e fa fatica a riprendere. Non parlare mai di peso, dieta o aspetto fisico, e niente sensi di colpa per lo stop. Conta la costanza, non l'intensità: una camminata di venti minuti vale. Riparti piano, il prossimo movimento è il più importante e va messo presto. Una settimana saltata non azzera niente.",
     "Conversazione. Parli come un compagno vero, non come un modulo. Se Leo ti saluta, ricambia e chiedigli come va. Se è stressato o dice di essere sommerso, prima una frase di calma, poi scegli UNA sola cosa da cui partire. Quando Leo ti chiede di fare qualcosa (aggiungere, spostare, stimare, tenere libero un giorno) la fai subito con le azioni, senza chiedere conferma, e la confermi in una frase. Ricordi quello che vi siete detti nella conversazione.",
-    "Cammini e gite. Se Leo chiede quando può fare un cammino o una gita, guarda i giorni consecutivi liberi nei prossimi mesi, tieni conto di scuole (martedì e giovedì), scadenze, prove del concorso e impegni già in calendario, e proponi al massimo due finestre con date precise, dicendo cosa si sposta. Se la durata manca, chiedigliela o stimala con prudenza. Non segnare niente finché non dice di sì, poi aggiungi un impegno per ogni giorno.",
+    "Cammini e gite. Se Leo chiede quando può fare un cammino o una gita, guarda i giorni consecutivi liberi nei prossimi mesi, tieni conto di scuole (martedì e giovedì), scadenze, prove del concorso e impegni già in calendario, e proponi due o tre finestre con date precise. Per ogni finestra elenca cosa ci cade dentro, cosa si può rimandare (con la nuova data proposta) e cosa non si può toccare, e conta il viaggio da Velletri verso Roma e ritorno. Se mancano durata, tipo di percorso o partenza, fai prima una domanda sola. Se la durata manca, chiedigliela o stimala con prudenza. Non segnare niente finché non dice di sì, poi aggiungi un impegno per ogni giorno.",
     "Priorità. Il tuo compito principale è aiutare Leo a portare avanti TUTTE le sue attività: lavoro, articoli, esperimenti, pratiche, scuole, messaggi da mandare. Ragiona prima su cosa è urgente e cosa si può togliere o spostare. Il movimento è una parte della vita di Leo, non il tema centrale: nelle risposte generali vale al massimo una frase finale.",
     "Brevità. Messaggi di due o tre frasi brevi, senza introduzioni e senza ripetere i dati che Leo già vede. Se serve un elenco di cose, mettile come azioni, non nel testo.",
     "Non insistere sul movimento. Proponi al massimo una o due uscite per risposta, solo se alla settimana ne mancano rispetto all'obiettivo, e mai uscite aggiuntive se quelle già fatte o già in programma raggiungono l'obiettivo. Nei messaggi che non riguardano il movimento, citalo al massimo con mezza frase.",
@@ -1171,8 +1175,8 @@ button { -webkit-tap-highlight-color: transparent; }
       S.trips.forEach(function (x) {
         tr.push('<div class="trip"><div class="trip-t"><b>' + esc(x.name) + "</b><span>" + (x.days ? esc(String(x.days)) + (Number(x.days) === 1 ? " giorno" : " giorni") : "durata da vedere") + (x.note ? " · " + esc(x.note) : "") + '</span></div><div class="trip-b"><button type="button" class="btn primary" data-act="trip-ask" data-id="' + esc(x.id) + '">Quando?</button><button type="button" class="iconbtn" data-act="trip-del" data-id="' + esc(x.id) + '" aria-label="Togli">×</button></div></div>');
       });
-      tr.push('<form class="tripform" id="tripform"><input id="trip-name" type="text" autocomplete="off" placeholder="Nome, per esempio Cammino dei Briganti" value="' + esc(S.tripName) + '"><input id="trip-days" type="text" inputmode="numeric" autocomplete="off" placeholder="Giorni" value="' + esc(S.tripDays) + '"><button type="submit" class="btn">Aggiungi</button></form>');
-      tr.push('<div class="actions"><button type="button" class="btn" data-act="trip-any"' + (S.chatBusy ? " disabled" : "") + ">Consigliami un periodo libero</button></div></section>");
+      tr.push('<p class="tripq">Quanti giorni di fila vorresti liberi?</p><div class="tripn">' + [1, 2, 3, 4, 5, 7].map(function (n) { return '<button type="button" class="btn" data-act="trip-n" data-n="' + n + '"' + (S.chatBusy ? " disabled" : "") + ">" + n + (n === 1 ? " giorno" : " giorni") + "</button>"; }).join("") + "</div>");
+      tr.push('<form class="tripform" id="tripform"><input id="trip-name" type="text" autocomplete="off" placeholder="Che cammino? (anche vuoto)" value="' + esc(S.tripName) + '"><input id="trip-days" type="text" inputmode="numeric" autocomplete="off" placeholder="Giorni" value="' + esc(S.tripDays) + '"><input id="trip-when" class="tripwhen" type="text" autocomplete="off" placeholder="Quando, se hai preferenze (per esempio prima di Natale)" value="' + esc(S.tripWhen) + '"><button type="button" class="btn primary" data-act="trip-plan"' + (S.chatBusy ? " disabled" : "") + '>Chiedi a Pino</button><button type="submit" class="btn">Salva in lista</button></form></section>');
       html.push(tr.join(""));
     }
     var rogne = S.tasks.filter(function (x) { return x.rogna && !x.done; });
@@ -1200,7 +1204,7 @@ button { -webkit-tap-highlight-color: transparent; }
   function setTab(tab) { S.tab = tab; S.open = null; S.confirm = null; try { localStorage.setItem("quaderno.tab", tab); } catch (e) {} render(); window.scrollTo(0, 0); }
 
   /* --- azioni ---------------------------------------------------------------------------- */
-  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "trip-name") S.tripName = ev.target.value; if (ev.target && ev.target.id === "trip-days") S.tripDays = ev.target.value; if (ev.target && ev.target.id === "chat-in") S.chatDraft = ev.target.value; if (ev.target && ev.target.id === "qadd-in") S.qaddDraft = ev.target.value; });
+  document.addEventListener("input", function (ev) { if (ev.target && ev.target.id === "trip-name") S.tripName = ev.target.value; if (ev.target && ev.target.id === "trip-days") S.tripDays = ev.target.value; if (ev.target && ev.target.id === "trip-when") S.tripWhen = ev.target.value; if (ev.target && ev.target.id === "chat-in") S.chatDraft = ev.target.value; if (ev.target && ev.target.id === "qadd-in") S.qaddDraft = ev.target.value; });
   document.addEventListener("submit", function (ev) {
     if (ev.target && ev.target.id === "qaddform") { ev.preventDefault(); var qv = $("#qadd-in").value.trim(); if (qv) quickAdd(qv); return; }
     if (ev.target && ev.target.id === "tripform") {
@@ -1230,6 +1234,8 @@ button { -webkit-tap-highlight-color: transparent; }
     if (act === "stage") { S.stageSel[S.seg] = el.dataset.stage; S.open = null; render(); return; }
     if (act === "goproj") { var gp = findProj(el.dataset.id); if (gp) { S.seg = gp.type === "esperimento" ? "esperimento" : "articolo"; S.stageSel[S.seg] = gp.stage; S.open = "p:" + gp.id; } setTab("lavori"); return; }
     if (act === "trip-ask") { var tp = S.trips.filter(function (x) { return x.id === el.dataset.id; })[0]; if (tp) { window.scrollTo(0, 0); sendChat("Quando posso fare " + tp.name + (tp.days ? ", mi servono " + tp.days + (Number(tp.days) === 1 ? " giorno" : " giorni") : "") + "? Guarda il calendario e consigliami due periodi, dimmi cosa salta o va spostato e se per te va bene tenerli liberi."); } return; }
+    if (act === "trip-n") { var nn = parseInt(el.dataset.n, 10); window.scrollTo(0, 0); sendChat("Vorrei prendermi " + nn + (nn === 1 ? " giorno" : " giorni") + " di fila per un cammino o una gita. Guarda il calendario e proponimi due o tre periodi con date precise. Per ciascuno dimmi cosa ci cade dentro, cosa si può rimandare e a quando, cosa invece non si può toccare, e quanto tempo di viaggio da Velletri conta."); return; }
+    if (act === "trip-plan") { var pn = ($("#trip-name").value || "").trim(), pd = parseInt($("#trip-days").value, 10), pw = ($("#trip-when").value || "").trim(); S.tripName = ""; S.tripDays = ""; S.tripWhen = ""; window.scrollTo(0, 0); if (!pn && !(pd > 0)) { sendChat("Vorrei fare un cammino o una gita ma non ho ancora deciso. Fammi tu le domande che servono, una alla volta (quanti giorni, che tipo di percorso, da dove parto, con chi), poi guarda il calendario."); return; } sendChat("Vorrei fare " + (pn || "un cammino") + (pd > 0 ? ", " + pd + (pd === 1 ? " giorno" : " giorni") : "") + (pw ? ", preferirei " + pw : "") + ". " + (pd > 0 ? "" : "Se non ti ho detto quanti giorni servono, chiedimelo o stimali. ") + "Guarda il calendario e proponimi due o tre periodi con date precise. Per ciascuno dimmi cosa ci cade dentro, cosa si può rimandare e a quando, cosa invece non si può toccare."); return; }
     if (act === "trip-any") { window.scrollTo(0, 0); sendChat("Vorrei prendermi dei giorni per un cammino o una gita. Guarda il calendario e dimmi quando ho finestre libere e quanti giorni di fila posso permettermi."); return; }
     if (act === "trip-del") { var tid = el.dataset.id; queue("trip:" + tid, function () { return S.db.doc("trips/" + tid).delete(); }); return; }
     if (act === "chat-quick") { sendChat(el.dataset.q); return; }
@@ -1394,7 +1400,7 @@ button { -webkit-tap-highlight-color: transparent; }
   /* --- avvio --------------------------------------------------------------------------------- */
   render();
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
-  setInterval(function () { if (!document.hidden && $("#scrim").hidden && !S.coachBusy && document.activeElement && document.activeElement.id !== "chat-in" && document.activeElement.id !== "qadd-in" && document.activeElement.id !== "trip-name" && document.activeElement.id !== "trip-days") render(); }, 60000);
+  setInterval(function () { if (!document.hidden && $("#scrim").hidden && !S.coachBusy && document.activeElement && document.activeElement.id !== "chat-in" && document.activeElement.id !== "qadd-in" && document.activeElement.id !== "trip-name" && document.activeElement.id !== "trip-days" && document.activeElement.id !== "trip-when") render(); }, 60000);
 
   var hasClaude = window.claude && typeof window.claude.use === "function";
   Promise.resolve(hasClaude ? window.claude.use("sample") : null).then(function (s) { S.sample = s; S.sampleState = s ? "ok" : "none"; render(); }, function () { S.sampleState = "none"; render(); });
