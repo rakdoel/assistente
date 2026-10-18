@@ -252,11 +252,11 @@ button { -webkit-tap-highlight-color: transparent; }
 
 /* coach */
 .coach { background: linear-gradient(160deg, var(--accent-soft) 0%, var(--sheet) 100%); border: 1px solid var(--rule); box-shadow: var(--shadow); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-.coach .who { display: flex; align-items: center; gap: 10px; }
-.coach .av { width: 38px; height: 38px; border-radius: 13px; background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
-.coach .av svg { width: 20px; height: 20px; }
+.coach .who { display: flex; align-items: center; gap: 14px; }
+.coach .av { width: 76px; height: 76px; border-radius: 22px; background: var(--accent-soft); display: grid; place-items: center; flex: none; }
+.coach .av svg { width: 68px; height: 68px; }
 .coach .who .av { color: var(--accent-ink); display: grid; font-size: inherit; }
-.coach .who b { font-size: 15px; }
+.coach .who b { font-size: 19px; font-family: var(--f-display); }
 .coach .who span { font-size: 12px; color: var(--muted); display: block; }
 .coach p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .coach .thinking { color: var(--muted); font-style: italic; }
@@ -269,10 +269,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .act .btn { grid-row: 1 / span 2; grid-column: 2; }
 .act.applied { opacity: 0.6; }
 .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.mode { border-radius: 20px; border: 1px solid var(--rule); background: var(--sheet); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 6px; text-align: left; font: inherit; color: var(--ink); cursor: pointer; min-width: 0; }
-.mode svg { width: 36px; height: 36px; padding: 8px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
-.mode b { font-size: 13.5px; line-height: 1.25; }
-.mode span { font-size: 12px; color: var(--muted); line-height: 1.3; }
+.mode { border-radius: 999px; border: 1px solid var(--rule); background: var(--sheet); box-shadow: var(--shadow); padding: 11px 8px; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px; font: inherit; color: var(--ink); cursor: pointer; min-width: 0; }
+.mode svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+.mode b { font-size: 13.5px; line-height: 1.2; }
+.mode span { display: none; }
 .mode:disabled { opacity: 0.55; cursor: default; }
 .chat { display: flex; flex-direction: column; gap: 8px; }
 .bub { max-width: 88%; padding: 10px 14px; border-radius: 18px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -431,6 +431,7 @@ button { -webkit-tap-highlight-color: transparent; }
   var KIND_LABEL = { todo: "da fare", impegno: "impegno fisso", scadenza: "scadenza" };
   var CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
   var FLAG = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17V3.5M5 4h9l-2 3.5 2 3.5H5"/></svg>';
+  var PINO = '<svg aria-hidden="true" viewBox="0 0 120 120"><ellipse cx="46" cy="104" rx="9" ry="5" fill="#C99567"/><ellipse cx="78" cy="104" rx="9" ry="5" fill="#C99567"/><path d="M18.2 79.6 L6.4 76.8 L16.1 69.9 L5.6 64.0 L17.0 60.0 L8.8 51.5 L21.0 50.8 L15.7 40.4 L27.6 43.0 L25.7 31.7 L36.3 37.4 L38.0 26.0 L46.3 34.4 L51.4 24.0 L56.8 34.3 L64.9 25.7 L67.0 37.1 L77.3 31.1 L75.8 42.5 L87.6 39.6 L82.6 50.1 L94.8 50.5 L86.8 59.2 L66 96 L34 96 Q26 90 30 84 Z" fill="#6B4A3A" stroke="#6B4A3A" stroke-width="3" stroke-linejoin="round"/><ellipse cx="52" cy="72" rx="30" ry="26" fill="#7E5A47"/><rect x="16" y="66" width="24" height="30" rx="8" fill="#2E8B8B"/><rect x="20" y="72" width="16" height="7" rx="3" fill="#256F6F"/><path d="M30 62 Q48 52 70 74" stroke="#2E8B8B" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M68 56 C86 50 104 68 111 80 C104 92 88 98 70 95 C60 90 60 62 68 56 Z" fill="#F3D3AE"/><circle cx="74" cy="55" r="6.5" fill="#E7B98C"/><circle cx="111" cy="80" r="5" fill="#2B2118"/><circle cx="91" cy="68" r="4" fill="#2B2118"/><circle cx="92.2" cy="66.8" r="1.3" fill="#fff"/><ellipse cx="86" cy="81" rx="5" ry="3.4" fill="#F29C86" opacity=".75"/><path d="M95 86 Q101 90 106 86" stroke="#2B2118" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M80 60 Q86 56 93 59" stroke="#4A3328" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>';
   var SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5C3.5 11.2 7.4 6.5 12.6 6.5c3.9 0 6.6 2.5 7.2 6.1l2.2 1.7-2.5 1.5"/><path d="M3.5 17.5h14.2M7 17.5v2M14 17.5v2M6.4 10.6 5 9.4M9 8.2 8.4 6.5M12.6 6.5V4.8M16 7.3l.9-1.5"/><circle cx="18.7" cy="12.9" r=".8" fill="currentColor" stroke="none"/></svg>';
   var ARROW_L = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4.5L7 10l5.5 5.5"/></svg>';
   var ARROW_R = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 4.5L13 10l-5.5 5.5"/></svg>';
@@ -635,7 +636,7 @@ button { -webkit-tap-highlight-color: transparent; }
       '<text x="38" y="44" text-anchor="middle">' + done + "/" + total + "</text></svg>";
   }
   function coachSnippet() {
-    var d = S.coachDoc, h = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Pino</b><span>" +
+    var d = S.coachDoc, h = ['<section class="coach"><div class="who"><span class="av">' + PINO + "</span><div><b>Pino</b><span>" +
       (d && d.at ? "Ultimo consiglio " + stamp(d.at.slice(0, 10)) : "Non ha ancora fatto il punto") + "</span></div></div>"];
     if (d && d.message) h.push("<p>" + esc(d.message.length > 260 ? d.message.slice(0, 258) + "…" : d.message) + "</p>");
     else h.push("<p>Chiedigli di fare il punto: guarda il carico, ti propone cosa spostare e quando muoverti.</p>");
@@ -982,7 +983,7 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   function renderCoach() {
     var html = [], d = S.coachDoc, t = todayStr();
-    html.push('<header class="top"><div class="brand">Pino</div><h1 class="big">Ti do una mano</h1><p class="summary">Guarda il calendario e i lavori, ti propone cosa spostare, ti trova tempo per camminare e ti sprona sulle rogne. Le proposte le applichi tu.</p></header>');
+    html.push('<div style="height:6px"></div>');
     if (S.sampleState === "none") {
       html.push('<section class="panel"><p class="empty">Pino funziona aprendo il quaderno da claude.ai o dall\'app di Claude, e usa il tuo account Claude. Da qui non è disponibile.</p></section>');
     } else {
@@ -991,8 +992,8 @@ button { -webkit-tap-highlight-color: transparent; }
         '<button type="button" class="mode" data-act="coach-run" data-mode="punto"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><b>Fai il punto</b><span>Carico e cosa spostare</span></button>' +
         '<button type="button" class="mode" data-act="coach-run" data-mode="sprona"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></svg><b>Spronami</b><span>Togliti una rogna</span></button>' +
         '<button type="button" class="mode" data-act="coach-run" data-mode="tempo"' + (busy ? " disabled" : "") + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-11 4 6 3-4 5 9z"/><circle cx="17" cy="5" r="2"/></svg><b>Muoviti</b><span>Movimento e buchi liberi</span></button></div>');
-      var c = ['<section class="coach"><div class="who"><span class="av">' + SPARK + "</span><div><b>Pino</b><span>" +
-        (busy ? "Sto pensando…" : d && d.at ? (d.mode === "sprona" ? "Spronata" : d.mode === "tempo" ? "Movimento" : "Il punto") + " del " + stamp(d.at.slice(0, 10)) : "Scegli cosa ti serve qui sopra") + "</span></div></div>"];
+      var c = ['<section class="coach"><div class="who"><span class="av">' + PINO + "</span><div><b>Pino</b><span>" +
+        (busy ? "Sto pensando…" : d && d.at ? (d.mode === "sprona" ? "Spronata" : d.mode === "tempo" ? "Movimento" : "Il punto") + " del " + stamp(d.at.slice(0, 10)) : "Dimmi cosa ti serve") + "</span></div></div>"];
       if (busy) c.push('<p class="thinking">Guardo il calendario e i lavori. Ci vuole qualche secondo.</p><div class="actions"><button type="button" class="btn" data-act="coach-stop">Ferma</button></div>');
       else if (S.coachErr) c.push('<p class="warn">' + esc(S.coachErr) + "</p>");
       if (!busy && d && d.message) {
