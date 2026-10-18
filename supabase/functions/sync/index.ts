@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
     const seen: string[] = Array.isArray(metaAll.sync?.seen) ? metaAll.sync.seen : [];
     const fresh = mails.filter((m) => m && m.id && !seen.includes(String(m.id)));
     let added = 0;
+    let ai = fresh.length ? (Deno.env.get("ANTHROPIC_API_KEY") ? "ok" : "manca ANTHROPIC_API_KEY") : "nessuna mail nuova";
     const key = Deno.env.get("ANTHROPIC_API_KEY");
     if (fresh.length && key) {
       const list = fresh.map((m, i) =>
@@ -114,12 +115,14 @@ Deno.serve(async (req) => {
         method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
         body: JSON.stringify({ model: "claude-sonnet-5-5", max_tokens: 1800, messages: [{ role: "user", content: prompt }] }),
       });
+      if (!r.ok) ai = "errore Claude " + r.status + ": " + (await r.text()).slice(0, 160);
       if (r.ok) {
         const out = await r.json();
         const text = (out.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
         const m = text.match(/\[[\s\S]*\]/);
         let items: any[] = [];
-        try { items = m ? JSON.parse(m[0]) : []; } catch { items = []; }
+        try { items = m ? JSON.parse(m[0]) : []; } catch { items = []; ai = "risposta non leggibile: " + text.slice(0, 120); }
+        if (!ai.startsWith("risposta")) ai = "ok, " + items.length + " trovate";
         const mrows: any[] = [];
         for (const it of items.slice(0, 8)) {
           const src = fresh[Number(it?.mail)];
@@ -142,7 +145,7 @@ Deno.serve(async (req) => {
       }
     }
     await upsert([{ user_id: uid, col: "meta", id: "sync", data: { at: now, events: keep.size, added, seen: seen.slice(-500) }, updated_at: now }]);
-    return json(200, { ok: true, events: keep.size, removed: stale.length, mails: fresh.length, added });
+    return json(200, { ok: true, events: keep.size, removed: stale.length, mails: fresh.length, added, ai });
   } catch (e) {
     return json(500, { error: String((e as Error).message || e).slice(0, 200) });
   }
