@@ -539,7 +539,29 @@ button { -webkit-tap-highlight-color: transparent; }
       out.push({ key: "pd:" + p.id, virtual: true, proj: p, date: p.deadline, done: isFinished(p), rec: false,
         task: { id: p.id, title: "Scadenza: " + p.title, kind: "scadenza", area: p.type === "esperimento" ? "lab" : "articoli", order: 0 } });
     });
-    return out;
+    return dedupe(out);
+  }
+  var DD_STOP = { il:1, lo:1, la:1, le:1, gli:1, i:1, un:1, una:1, di:1, del:1, della:1, dei:1, delle:1, da:1, a:1, al:1, alla:1, e:1, in:1, per:1, con:1, su:1, che:1, il:1, concorso:1, scuola:1 };
+  function ddTok(t) {
+    var w = String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]+/g, " ").split(/\s+/);
+    var o = {}, n = 0; w.forEach(function (x) { if (x.length > 2 && !DD_STOP[x]) { o[x.slice(0, 6)] = 1; n++; } });
+    return { set: o, n: n };
+  }
+  function ddSame(a, b) {
+    if (!a.n || !b.n) return false;
+    var c = 0; Object.keys(a.set).forEach(function (k) { if (b.set[k]) c++; });
+    var m = Math.min(Object.keys(a.set).length, Object.keys(b.set).length);
+    return m > 0 && c >= Math.min(2, m) && c / m >= 0.6;
+  }
+  /* Se il calendario ha già la stessa cosa nello stesso giorno, la voce scritta a mano o dalla mail non si ripete. */
+  function dedupe(out) {
+    var cal = {};
+    out.forEach(function (e) { if (!e.rec && e.date && e.task && e.task.source === "calendar") (cal[e.date] = cal[e.date] || []).push(ddTok(e.task.title)); });
+    return out.filter(function (e) {
+      if (e.rec || !e.date || !e.task || e.task.source === "calendar" || !cal[e.date]) return true;
+      var tk = ddTok(e.task.title);
+      return !cal[e.date].some(function (c) { return ddSame(tk, c); });
+    });
   }
   function rank(k) { if (k.kind === "scadenza" && !k.time) return 0; return k.time ? 1 : 2; }
   var KORD = { scadenza: 0, impegno: 1, todo: 2 };
